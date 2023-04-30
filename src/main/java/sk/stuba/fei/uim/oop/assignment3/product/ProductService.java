@@ -37,4 +37,16 @@ public class ProductService {
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
+    public Optional<Integer> getProductAmountById(Long id) {
+        return productRepository.findById(id)
+                .map(product -> product.getAmount());
+    }
+    public Optional<Product> updateProductAmountById(Long id, int incrementAmount) {
+        return productRepository.findById(id)
+                .map(product -> {
+                    product.setAmount(product.getAmount() + incrementAmount);
+                    return productRepository.save(product);
+                });
+    }
+
 }

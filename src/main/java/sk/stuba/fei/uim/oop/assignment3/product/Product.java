@@ -17,10 +17,10 @@ import javax.persistence.Id;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private long id;
     private String name;
     private String description;
     private int amount;
     private String unit;
-    private int price;
+    private double price;
 }

@@ -2,6 +2,7 @@ package sk.stuba.fei.uim.oop.assignment3.product;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,4 +41,17 @@ public class Controller {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/{id}/amount")
+    public ResponseEntity<Integer> getProductAmountById(@PathVariable Long id) {
+        return productService.getProductAmountById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+    @PostMapping("/{id}/amount")
+    public ResponseEntity<Product> updateProductAmountById(@PathVariable Long id, @RequestBody int incrementAmount) {
+        return productService.updateProductAmountById(id, incrementAmount)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }
