@@ -24,29 +24,33 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public Product updateProduct(Long id, Product updatedProduct) {
-        return productRepository.findById(id)
-                .map(product -> {
-                    product.setName(updatedProduct.getName());
-                    product.setDescription(updatedProduct.getDescription());
-                    return productRepository.save(product);
-                })
-                .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
+    public Optional<Product> updateProduct(Long id, Product updatedProduct) {
+        return productRepository.findById(id).map(product -> {
+            product.setName(updatedProduct.getName());
+            product.setPrice(updatedProduct.getPrice());
+            product.setAmount(updatedProduct.getAmount());
+            product.setDescription(updatedProduct.getDescription());
+            return productRepository.save(product);
+        });
     }
+
 
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
-    public Optional<Integer> getProductAmountById(Long id) {
+    public Optional<Amount> getProductAmountById(Long id) {
         return productRepository.findById(id)
-                .map(product -> product.getAmount());
+                .map(product -> new Amount(product.getAmount()));
     }
-    public Optional<Product> updateProductAmountById(Long id, int incrementAmount) {
+
+
+    public Optional<Product> updateProductAmountById(Long id, int newAmount) {
         return productRepository.findById(id)
                 .map(product -> {
-                    product.setAmount(product.getAmount() + incrementAmount);
+                    product.setAmount(newAmount);
                     return productRepository.save(product);
                 });
     }
+
 
 }

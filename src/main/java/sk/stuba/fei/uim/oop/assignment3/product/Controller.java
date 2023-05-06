@@ -33,8 +33,11 @@ public class Controller {
 
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
-        return ResponseEntity.ok(productService.updateProduct(id, updatedProduct));
+        return productService.updateProduct(id, updatedProduct)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
@@ -42,16 +45,20 @@ public class Controller {
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/{id}/amount")
-    public ResponseEntity<Integer> getProductAmountById(@PathVariable Long id) {
+    public ResponseEntity<Amount> getProductAmountById(@PathVariable Long id) {
         return productService.getProductAmountById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    @PostMapping("/{id}/amount")
-    public ResponseEntity<Product> updateProductAmountById(@PathVariable Long id, @RequestBody int incrementAmount) {
-        return productService.updateProductAmountById(id, incrementAmount)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
+//    @PutMapping("/{id}/amount")
+//    public ResponseEntity<Product> updateProductAmountById(@PathVariable Long id, @RequestBody AmountUpdateRequest amountUpdateRequest) {
+//        return productService.updateProductAmountById(id, amountUpdateRequest.getIncrementAmount())
+//                .map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+//    }
+
+
+
+//TODO amount bad request
 }
