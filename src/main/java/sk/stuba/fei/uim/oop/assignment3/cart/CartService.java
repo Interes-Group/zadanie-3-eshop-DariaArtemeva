@@ -16,6 +16,9 @@ public class CartService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
     public List<Cart> getAllCarts() {
         return cartRepository.findAll();
     }
@@ -33,8 +36,19 @@ public class CartService {
         return cartRepository.findById(cartId).flatMap(cart -> productRepository.findById(productId).map(product -> {
             if (!cart.isPayed() && product.getAmount() >= quantity) {
                 CartItem cartItem = new CartItem();
-                cartItem.setProduct(product);
+
+                // Создаем объект EmbeddedProduct и копируем данные из Product
+                EmbeddedProduct embeddedProduct = new EmbeddedProduct();
+                embeddedProduct.setId(product.getId());
+                embeddedProduct.setName(product.getName());
+                embeddedProduct.setDescription(product.getDescription());
+                embeddedProduct.setPrice(product.getPrice());
+                embeddedProduct.setAmount(quantity);
+
+                cartItem.setProduct(embeddedProduct);
                 cartItem.setQuantity(quantity);
+                cartItem.setCart(cart);
+                cartItem = cartItemRepository.save(cartItem);
                 cart.getShoppingList().add(cartItem);
                 product.setAmount(product.getAmount() - quantity);
                 productRepository.save(product);
@@ -46,20 +60,25 @@ public class CartService {
         }));
     }
 
+
+
+
+
     public void deleteCart(Long id) {
         cartRepository.deleteById(id);
     }
 
-    public boolean payForCart(Long id) {
-        return cartRepository.findById(id).map(cart -> {
+    public Optional<Cart> payForCart(Long id) {
+        return cartRepository.findById(id).flatMap(cart -> {
             if (!cart.isPayed()) {
                 cart.setPayed(true);
                 cartRepository.save(cart);
-                return true;
+                return Optional.of(cart);
             } else {
-                return false;
+                return Optional.empty();
             }
-        }).orElse(false);
+        });
     }
+
 }
 

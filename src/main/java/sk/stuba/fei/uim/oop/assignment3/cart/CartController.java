@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/cart")
@@ -32,12 +33,13 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(cartService.createCart());
     }
 
-    @PostMapping("/{cartId}/add/{productId}/{quantity}")
-    public ResponseEntity<CartItem> addProductToCart(@PathVariable Long cartId, @PathVariable Long productId, @PathVariable int quantity) {
-        return cartService.addProductToCart(cartId, productId, quantity)
+    @PostMapping("/{cartId}/add")
+    public ResponseEntity<CartItem> addProductToCart(@PathVariable Long cartId, @RequestBody AddProductRequest request) {
+        return cartService.addProductToCart(cartId, request.getProductId(), request.getAmount())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.badRequest().build());
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCart(@PathVariable Long id) {
@@ -45,10 +47,10 @@ public class CartController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/pay")
+    @GetMapping("/{id}/pay")
     public ResponseEntity<Void> payForCart(@PathVariable Long id) {
-        boolean paid = cartService.payForCart(id);
-        if (paid) {
+        Optional<Cart> paidCart = cartService.payForCart(id);
+        if (paidCart.isPresent()) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.badRequest().build();
