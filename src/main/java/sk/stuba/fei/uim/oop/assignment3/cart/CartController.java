@@ -43,8 +43,8 @@ public class CartController {
     }
 
     @PostMapping("/{cartId}/add")
-    public ResponseEntity<CartResponse> addProductToCart(@PathVariable Long cartId,
-                                                         @RequestBody AddProductRequest addProductRequest) {
+    public ResponseEntity<CartResponseWithoutIds> addProductToCart(@PathVariable Long cartId,
+                                                                   @RequestBody AddProductRequest addProductRequest) {
         Long productId = addProductRequest.getProductId();
         Long quantity = addProductRequest.getAmount();
         Optional<Cart> cartOpt = cartRepository.findById(cartId);
@@ -74,7 +74,7 @@ public class CartController {
             productRepository.save(product);
             cartRepository.save(cart);
 
-            CartResponse cartResponse = new CartResponse(cart);
+            CartResponseWithoutIds cartResponse = new CartResponseWithoutIds(cart);
             return ResponseEntity.ok(cartResponse);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
