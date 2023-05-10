@@ -51,14 +51,5 @@ public class Controller {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-//    @PutMapping("/{id}/amount")
-//    public ResponseEntity<Product> updateProductAmountById(@PathVariable Long id, @RequestBody AmountUpdateRequest amountUpdateRequest) {
-//        return productService.updateProductAmountById(id, amountUpdateRequest.getIncrementAmount())
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }
 
-
-
-//TODO amount bad request
 }
