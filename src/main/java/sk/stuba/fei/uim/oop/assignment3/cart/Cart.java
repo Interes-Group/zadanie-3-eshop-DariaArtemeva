@@ -1,8 +1,8 @@
 package sk.stuba.fei.uim.oop.assignment3.cart;
 
-
 import lombok.Getter;
 import lombok.Setter;
+
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -12,19 +12,27 @@ import java.util.List;
 @Setter
 @Entity
 public class Cart {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "cart_id")
+    @OneToMany(orphanRemoval = true)
     private List<CartItem> shoppingList;
-
     private boolean payed;
 
     public Cart() {
         this.shoppingList = new ArrayList<>();
         this.payed = false;
+    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    public void addItem(CartItem item) {
+        shoppingList.add(item);
+    }
+
+    public void removeItem(CartItem item) {
+        shoppingList.remove(item);
+    }
+
+    public double getTotal() {
+        return shoppingList.stream().mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity()).sum();
     }
 }

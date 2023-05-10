@@ -1,59 +1,107 @@
 package sk.stuba.fei.uim.oop.assignment3.cart;
-
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import sk.stuba.fei.uim.oop.assignment3.product.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/cart")
 public class CartController {
-    @Autowired
-    private CartService cartService;
 
-    @GetMapping
-    public ResponseEntity<List<Cart>> getAllCarts() {
-        return ResponseEntity.ok(cartService.getAllCarts());
-    }
+    private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Cart> getCartById(@PathVariable Long id) {
-        return cartService.getCartById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public CartController(CartRepository cartRepository, ProductRepository productRepository) {
+        this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
     }
 
     @PostMapping
-    public ResponseEntity<Cart> createCart() {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.createCart());
+    public ResponseEntity<CartResponse> createCart() {
+        Cart cart = new Cart();
+        cartRepository.save(cart);
+        CartResponse cartResponse = new CartResponse(cart);
+        return new ResponseEntity<>(cartResponse, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CartResponse> getCartById(@PathVariable Long id) {
+        return cartRepository.findById(id)
+                .map(cart -> new ResponseEntity<>(new CartResponse(cart), HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCartById(@PathVariable Long id) {
+        if (cartRepository.existsById(id)) {
+            cartRepository.deleteById(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping("/{cartId}/add")
-    public ResponseEntity<CartItem> addProductToCart(@PathVariable Long cartId, @RequestBody AddProductRequest request) {
-        return cartService.addProductToCart(cartId, request.getProductId(), request.getAmount())
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.badRequest().build());
-    }
+    public ResponseEntity<CartResponse> addProductToCart(@PathVariable Long cartId,
+                                                         @RequestBody AddProductRequest addProductRequest) {
+        Long productId = addProductRequest.getProductId();
+        Long quantity = addProductRequest.getAmount();
+        Optional<Cart> cartOpt = cartRepository.findById(cartId);
+        Optional<Product> productOpt = productRepository.findById(productId);
 
+        if (cartOpt.isPresent() && productOpt.isPresent()) {
+            Cart cart = cartOpt.get();
+            Product product = productOpt.get();
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCart(@PathVariable Long id) {
-        cartService.deleteCart(id);
-        return ResponseEntity.noContent().build();
-    }
+            if (product.getAmount() < quantity) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
 
-    @GetMapping("/{id}/pay")
-    public ResponseEntity<Void> payForCart(@PathVariable Long id) {
-        Optional<Cart> paidCart = cartService.payForCart(id);
-        if (paidCart.isPresent()) {
-            return ResponseEntity.noContent().build();
+            CartItem cartItem = cart.getShoppingList().stream()
+                    .filter(item -> item.getProduct().getId() == productId.intValue())
+                    .findFirst()
+                    .orElse(null);
+
+            if (cartItem != null) {
+                cartItem.setQuantity(cartItem.getQuantity() + quantity.intValue());
+            } else {
+                cartItem = new CartItem(product, quantity.intValue());
+                cart.getShoppingList().add(cartItem);
+            }
+
+            product.setAmount(product.getAmount() - quantity.intValue());
+            productRepository.save(product);
+            cartRepository.save(cart);
+
+            CartResponse cartResponse = new CartResponse(cart);
+            return ResponseEntity.ok(cartResponse);
         } else {
-            return ResponseEntity.badRequest().build();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/{cartId}/pay")
+    public ResponseEntity<String> payForCart(@PathVariable Long cartId) {
+        Optional<Cart> cartOpt = cartRepository.findById(cartId);
+
+        if (cartOpt.isPresent()) {
+            Cart cart = cartOpt.get();
+
+            if (cart.isPayed()) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            double totalPrice = cart.getShoppingList().stream()
+                    .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
+                    .sum();
+
+            cart.setPayed(true);
+            cartRepository.save(cart);
+            return ResponseEntity.ok(String.format("%.2f", totalPrice));
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 }

@@ -2,7 +2,7 @@ package sk.stuba.fei.uim.oop.assignment3.cart;
 
 public class AddProductRequest {
     private Long productId;
-    private int amount;
+    private Long amount;
 
     public Long getProductId() {
         return productId;
@@ -12,12 +12,11 @@ public class AddProductRequest {
         this.productId = productId;
     }
 
-    public int getAmount() {
+    public Long getAmount() {
         return amount;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(Long amount) {
         this.amount = amount;
     }
 }
-
