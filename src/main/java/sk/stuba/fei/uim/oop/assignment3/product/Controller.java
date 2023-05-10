@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/product")
@@ -41,9 +42,15 @@ public class Controller {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
-        return ResponseEntity.noContent().build();
+        Optional<Product> product = productService.deleteProduct(id);
+        if (product.isPresent()) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
+
+
     @GetMapping("/{id}/amount")
     public ResponseEntity<Amount> getProductAmountById(@PathVariable Long id) {
         return productService.getProductAmountById(id)
@@ -51,5 +58,11 @@ public class Controller {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/{id}/amount")
+    public ResponseEntity<Amount> incrementProductAmount(@PathVariable Long id, @RequestBody Amount amount) {
+        return productService.incrementProductAmount(id, amount.getAmount())
+                .map(product -> ResponseEntity.ok(new Amount(product.getAmount())))
+                .orElse(ResponseEntity.notFound().build());
+    }
 
 }

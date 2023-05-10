@@ -26,18 +26,36 @@ public class ProductService {
 
     public Optional<Product> updateProduct(Long id, Product updatedProduct) {
         return productRepository.findById(id).map(product -> {
-            product.setName(updatedProduct.getName());
-            product.setPrice(updatedProduct.getPrice());
-            product.setAmount(updatedProduct.getAmount());
-            product.setDescription(updatedProduct.getDescription());
+            if (updatedProduct.getName() != null) {
+                product.setName(updatedProduct.getName());
+            }
+            if (updatedProduct.getDescription() != null) {
+                product.setDescription(updatedProduct.getDescription());
+            }
+            if (updatedProduct.getAmount() != 0) {
+                product.setAmount(updatedProduct.getAmount());
+            }
+            if (updatedProduct.getUnit() != null) {
+                product.setUnit(updatedProduct.getUnit());
+            }
+            if (updatedProduct.getPrice() != 0) {
+                product.setPrice(updatedProduct.getPrice());
+            }
             return productRepository.save(product);
         });
     }
 
 
-    public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+
+    public Optional<Product> deleteProduct(Long id) {
+        Optional<Product> product = productRepository.findById(id);
+        if (product.isPresent()) {
+            productRepository.deleteById(id);
+        }
+        return product;
     }
+
+
     public Optional<Amount> getProductAmountById(Long id) {
         return productRepository.findById(id)
                 .map(product -> new Amount(product.getAmount()));
@@ -52,5 +70,12 @@ public class ProductService {
                 });
     }
 
+    public Optional<Product> incrementProductAmount(Long id, int incrementAmount) {
+        return productRepository.findById(id)
+                .map(product -> {
+                    product.setAmount(product.getAmount() + incrementAmount);
+                    return productRepository.save(product);
+                });
+    }
 
 }

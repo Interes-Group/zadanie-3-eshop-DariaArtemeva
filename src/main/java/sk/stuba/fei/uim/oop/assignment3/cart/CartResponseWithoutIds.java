@@ -19,6 +19,6 @@ public class CartResponseWithoutIds {
         this.payed = cart.isPayed();
     }
 
-    // Getters and setters
+
 }
 

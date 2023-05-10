@@ -57,7 +57,9 @@ public class CartController {
             if (product.getAmount() < quantity) {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
-
+            if (cart == null || product == null) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
             CartItem cartItem = cart.getShoppingList().stream()
                     .filter(item -> item.getProduct().getId() == productId.intValue())
                     .findFirst()
