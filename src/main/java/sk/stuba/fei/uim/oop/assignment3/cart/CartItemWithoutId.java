@@ -2,6 +2,7 @@ package sk.stuba.fei.uim.oop.assignment3.cart;
 
 import lombok.Getter;
 import lombok.Setter;
+import sk.stuba.fei.uim.oop.assignment3.product.Product;
 
 @Getter
 @Setter
@@ -10,7 +11,13 @@ public class CartItemWithoutId {
     private int amount;
 
     public CartItemWithoutId(CartItem cartItem) {
-        this.productId = cartItem.getProduct().getId();
+        Product product = cartItem.getProduct();
+        if (product != null) {
+            this.productId = product.getId();
+        } else {
+            this.productId = null;
+        }
         this.amount = cartItem.getQuantity();
     }
+
 }

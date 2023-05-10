@@ -12,17 +12,20 @@ import java.util.List;
 @Setter
 @Entity
 public class Cart {
-    @OneToMany(orphanRemoval = true)
-    private List<CartItem> shoppingList;
-    private boolean payed;
 
-    public Cart() {
-        this.shoppingList = new ArrayList<>();
-        this.payed = false;
-    }
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @OneToMany
+    private List<CartItem> shoppingList;
+
+    private boolean payed;
+
+    public Cart() {
+        this.shoppingList = new ArrayList<>(); // Добавьте эту строку для инициализации списка
+        this.payed = false;
+    }
 
     public void addItem(CartItem item) {
         shoppingList.add(item);

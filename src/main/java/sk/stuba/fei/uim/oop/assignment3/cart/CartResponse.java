@@ -4,19 +4,24 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 @Getter
 @Setter
 public class CartResponse {
     private Long id;
-    private List<CartItem> shoppingList;
+    private List<TestCartEntry> shoppingList;
     private boolean payed;
 
-    // Конструктор, преобразующий Cart в CartResponse
     public CartResponse(Cart cart) {
         this.id = cart.getId();
-        this.shoppingList = cart.getShoppingList();
+        this.shoppingList = cart.getShoppingList().stream().map(item -> {
+            TestCartEntry entry = new TestCartEntry();
+            entry.setProductId(item.getProduct().getId());
+            entry.setAmount(item.getQuantity());
+            return entry;
+        }).collect(Collectors.toList());
         this.payed = cart.isPayed();
     }
-
-    // Геттеры и сеттеры
 }
+
