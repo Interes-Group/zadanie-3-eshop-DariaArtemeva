@@ -3,6 +3,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import sk.stuba.fei.uim.oop.assignment3.product.*;
 
+import java.util.Locale;
 import java.util.Optional;
 
 @RestController
@@ -11,10 +12,12 @@ public class CartController {
 
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private CartItemRepository cartItemRepository;
 
-    public CartController(CartRepository cartRepository, ProductRepository productRepository) {
+    public CartController(CartRepository cartRepository, ProductRepository productRepository, CartItemRepository cartItemRepository) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
+        this.cartItemRepository = cartItemRepository;
     }
 
     @PostMapping
@@ -54,6 +57,11 @@ public class CartController {
             Cart cart = cartOpt.get();
             Product product = productOpt.get();
 
+            // проверка, была ли корзина оплачена
+            if (cart.isPayed()) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
             if (product.getAmount() < quantity) {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
@@ -70,6 +78,8 @@ public class CartController {
             } else {
                 cartItem = new CartItem(product, quantity.intValue());
                 cart.getShoppingList().add(cartItem);
+                // Сохранение нового CartItem
+                cartItemRepository.save(cartItem);
             }
 
             product.setAmount(product.getAmount() - quantity.intValue());
@@ -100,7 +110,7 @@ public class CartController {
 
             cart.setPayed(true);
             cartRepository.save(cart);
-            return ResponseEntity.ok(String.format("%.2f", totalPrice));
+            return ResponseEntity.ok(String.format(Locale.US, "%.2f", totalPrice));
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
