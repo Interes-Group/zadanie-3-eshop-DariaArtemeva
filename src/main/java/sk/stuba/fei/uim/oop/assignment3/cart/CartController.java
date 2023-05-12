@@ -57,7 +57,6 @@ public class CartController {
             Cart cart = cartOpt.get();
             Product product = productOpt.get();
 
-            // проверка, была ли корзина оплачена
             if (cart.isPayed()) {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
@@ -78,7 +77,6 @@ public class CartController {
             } else {
                 cartItem = new CartItem(product, quantity.intValue());
                 cart.getShoppingList().add(cartItem);
-                // Сохранение нового CartItem
                 cartItemRepository.save(cartItem);
             }
 

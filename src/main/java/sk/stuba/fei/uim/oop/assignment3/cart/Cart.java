@@ -23,7 +23,7 @@ public class Cart {
     private boolean payed;
 
     public Cart() {
-        this.shoppingList = new ArrayList<>(); // Добавьте эту строку для инициализации списка
+        this.shoppingList = new ArrayList<>();
         this.payed = false;
     }
 
